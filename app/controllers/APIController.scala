@@ -23,14 +23,15 @@ class APIController @Inject()(val controllerComponents: ControllerComponents) ex
    *   "serverTime" : string (local time from dateTime library in ISO 8601 format)
    * */
   def getStatus() = Action { implicit request: Request[AnyContent] =>
-
+    
+    play.api.Mode.Prod
 
     // construct the json
     val json: JsValue = Json.obj(
       "service" -> "pass-bakery",
-      "environment" -> play.api.Environment.toString,
-      "serverTime" -> DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()),
-      "fixTime" -> LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+      "environment" -> play.api.Mode.toString,
+      "test" -> play.api.Mode.Dev.toString,
+      "serverTime" -> LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     )
 
     Ok(json)
