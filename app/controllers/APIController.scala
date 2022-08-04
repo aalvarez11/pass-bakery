@@ -1,5 +1,6 @@
 package controllers
 
+import models.StatusInfo
 import java.time.LocalDateTime
 import javax.inject._
 import play.api._
@@ -16,24 +17,21 @@ import java.time.format.DateTimeFormatter
 @Singleton
 class APIController @Inject()(val controllerComponents: ControllerComponents) extends BaseController {
 
-  /*
+
+  /**
    * method that returns a json object with the following information:
    * { "service" : "pass-bakery"
    *   "environment" : string (production or development run, based on play fw env config)
    *   "serverTime" : string (local time from dateTime library in ISO 8601 format)
-   * */
+   * }
+   */
   def getStatus() = Action { implicit request: Request[AnyContent] =>
-    
-    play.api.Mode.Prod
+    implicit val statusWrites: OWrites[StatusInfo] = Json.writes[StatusInfo]
+    val userEnvironment = play.api.Mode.toString
+    val formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    val userInfo = StatusInfo(service = "pass-bakery", environment = userEnvironment, serverTime = formattedTimestamp)
+    val statusJson : JsValue = Json.toJson(userInfo)
 
-    // construct the json
-    val json: JsValue = Json.obj(
-      "service" -> "pass-bakery",
-      "environment" -> play.api.Mode.toString,
-      "test" -> play.api.Mode.Dev.toString,
-      "serverTime" -> LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    )
-
-    Ok(json)
+    Ok(statusJson)
   }
 }
