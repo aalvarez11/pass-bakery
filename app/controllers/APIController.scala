@@ -29,7 +29,7 @@ class APIController @Inject()(val controllerComponents: ControllerComponents) ex
     implicit val statusWrites: OWrites[StatusInfo] = Json.writes[StatusInfo]
     val userEnvironment = play.api.Mode.toString
     val formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    val userInfo = StatusInfo(service = "pass-bakery", environment = userEnvironment, serverTime = formattedTimestamp)
+    val userInfo = StatusInfo("pass-bakery", userEnvironment, formattedTimestamp)
     val statusJson : JsValue = Json.toJson(userInfo)
 
     Ok(statusJson)
