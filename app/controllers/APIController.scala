@@ -1,6 +1,7 @@
 package controllers
 
 import models.StatusInfo
+import services.StatusInfoService
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject._
@@ -13,7 +14,7 @@ import play.api.libs.json._
  * application's home page.
  */
 @Singleton
-class APIController @Inject()(val controllerComponents: ControllerComponents, env: Environment) extends BaseController {
+class APIController @Inject()(val controllerComponents: ControllerComponents, statInfo: StatusInfoService) extends BaseController {
 
   /**
    * method that returns a json object with the following information:
@@ -22,13 +23,8 @@ class APIController @Inject()(val controllerComponents: ControllerComponents, en
    *   "serverTime" : string (local time from dateTime library in ISO 8601 format)
    * }
    */
-
   def getStatus() = Action { implicit request: Request[AnyContent] =>
-    val userEnvironment = env.mode.toString
-    val formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-    val userInfo = StatusInfo("pass-bakery", userEnvironment, formattedTimestamp)
-    val statusJson : JsValue = Json.toJson(userInfo)
 
-    Ok(statusJson)
+    Ok(statInfo.getUserStatus())
   }
 }
