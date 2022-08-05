@@ -24,7 +24,6 @@ class APIController @Inject()(val controllerComponents: ControllerComponents, en
    */
 
   def getStatus() = Action { implicit request: Request[AnyContent] =>
-
     val userEnvironment = env.mode.toString
     val formattedTimestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     val userInfo = StatusInfo("pass-bakery", userEnvironment, formattedTimestamp)
