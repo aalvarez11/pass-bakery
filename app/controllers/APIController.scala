@@ -2,8 +2,11 @@ package controllers
 
 import DAO.BakeryDatabase
 import services.StatusInfoService
+
 import javax.inject._
 import play.api.mvc._
+
+import scala.concurrent.ExecutionContext
 
 /** This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
@@ -12,7 +15,8 @@ import play.api.mvc._
 class APIController @Inject() (
     val controllerComponents: ControllerComponents,
     statInfo: StatusInfoService,
-    bakeryDB: BakeryDatabase
+    bakeryDB: BakeryDatabase,
+    implicit val executionContext: ExecutionContext
 ) extends BaseController {
 
   /** method that returns a json object with the following information:
@@ -25,7 +29,11 @@ class APIController @Inject() (
     Ok(statInfo.getUserStatus())
   }
 
-  def getBakeryProducts() = Action { implicit request: Request[AnyContent] =>
-    Ok(bakeryDB.getDatabaseName())
+  def getBakeryProducts() = Action.async {
+    implicit request: Request[AnyContent] =>
+      //Ok(bakeryDB.getDatabaseName())
+      bakeryDB.getDatabaseName.map { databaseName =>
+        Ok(databaseName)
+      }
   }
 }
