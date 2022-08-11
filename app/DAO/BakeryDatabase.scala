@@ -8,10 +8,10 @@ import models.DatabaseExecutionContext
 
 class BakeryDatabase @Inject() (
     db: Database,
-    databaseExecutionContext: DatabaseExecutionContext
+    implicit val databaseExecutionContext: DatabaseExecutionContext
 ) {
 
-  def getDatabaseName: Future[String] = {
+  def getDatabaseTables: Future[String] = {
     Future {
       db.withConnection { conn =>
         // do something with your db
@@ -33,6 +33,6 @@ class BakeryDatabase @Inject() (
         }
         tableListStr
       }
-    }(databaseExecutionContext)
+    }
   }
 }
