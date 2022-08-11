@@ -5,9 +5,6 @@ import play.api.db.Database
 
 import scala.concurrent.Future
 import models.DatabaseExecutionContext
-import play.api.libs.json._
-
-import java.sql.ResultSet
 
 class BakeryDatabase @Inject() (
     db: Database,
