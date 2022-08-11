@@ -11,7 +11,8 @@ libraryDependencies += guice
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.8.2"
 libraryDependencies ++= Seq(
-  javaJdbc,
+  jdbc,
+  evolutions,
   "org.postgresql" % "postgresql" % "42.4.0", // postgresql driver dependency (might be redundant w doobie-pgs)
   "org.tpolecat" %% "doobie-core" % "1.0.0-RC1", // doobie core dependency
   "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC1", // HikariCP transactor.
