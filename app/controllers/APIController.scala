@@ -29,11 +29,10 @@ class APIController @Inject() (
     Ok(statInfo.getUserStatus())
   }
 
-  def getBakeryProducts() = Action.async {
+  def getDatabaseTables() = Action.async {
     implicit request: Request[AnyContent] =>
-      //Ok(bakeryDB.getDatabaseName())
-      bakeryDB.getDatabaseName.map { databaseName =>
-        Ok(databaseName)
+      bakeryDB.getDatabaseTables.map { databaseTables =>
+        Ok(databaseTables)
       }
   }
 }
