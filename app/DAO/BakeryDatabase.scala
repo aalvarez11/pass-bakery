@@ -7,25 +7,35 @@ import scala.concurrent.Future
 import models.DatabaseExecutionContext
 import play.api.libs.json._
 
+import java.sql.ResultSet
+
 class BakeryDatabase @Inject() (
     db: Database,
     databaseExecutionContext: DatabaseExecutionContext
 ) {
-  def getDatabaseName(): Future[JsValue] = {
+
+  def getDatabaseName: Future[String] = {
     Future {
       db.withConnection { conn =>
         // do something with your db
-        val dbName: String = db.name
-        Json.parse("""
-            {
-              "database name" : dbName
-            }
-            """)
+        val result = conn.getMetaData.getTables(
+          null,
+          null,
+          null,
+          Array("TABLE")
+        )
+        var tableListStr = ""
+
+        while (result.next()) {
+          val tableName = result.getString("TABLE_NAME")
+          if (tableListStr == "") {
+            tableListStr += tableName
+          } else {
+            tableListStr = tableListStr + ", " + tableName
+          }
+        }
+        tableListStr
       }
     }(databaseExecutionContext)
   }
-}
-
-object BakeryDatabase {
-  implicit val dbWrites: OWrites[Future[JsValue]] = Json.writes[Future[JsValue]]
 }
