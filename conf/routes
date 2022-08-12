@@ -12,3 +12,4 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 
 # API endpoints
 GET     /pass-bakery/status         controllers.APIController.getStatus()
+GET     /pass-bakery/db-tables      controllers.APIController.getDatabaseTables()

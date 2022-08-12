@@ -1,13 +1,12 @@
 package controllers
 
-import models.StatusInfo
+import DAO.BakeryDatabase
 import services.StatusInfoService
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+
 import javax.inject._
-import play.api._
 import play.api.mvc._
-import play.api.libs.json._
+
+import scala.concurrent.ExecutionContext
 
 /** This controller creates an `Action` to handle HTTP requests to the
   * application's home page.
@@ -15,7 +14,9 @@ import play.api.libs.json._
 @Singleton
 class APIController @Inject() (
     val controllerComponents: ControllerComponents,
-    statInfo: StatusInfoService
+    statInfo: StatusInfoService,
+    bakeryDB: BakeryDatabase,
+    implicit val executionContext: ExecutionContext
 ) extends BaseController {
 
   /** method that returns a json object with the following information:
@@ -26,5 +27,12 @@ class APIController @Inject() (
     */
   def getStatus() = Action { implicit request: Request[AnyContent] =>
     Ok(statInfo.getUserStatus())
+  }
+
+  def getDatabaseTables() = Action.async {
+    implicit request: Request[AnyContent] =>
+      bakeryDB.getDatabaseTables.map { databaseTables =>
+        Ok(databaseTables)
+      }
   }
 }
