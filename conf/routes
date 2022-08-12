@@ -13,3 +13,7 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # API endpoints
 GET     /pass-bakery/status         controllers.APIController.getStatus()
 GET     /pass-bakery/db-tables      controllers.APIController.getDatabaseTables()
+#POST    /rest/bakery/product        controllers.APIController.createProduct()
+#GET     /rest/bakery/product/:id
+#PUT     /rest/bakery/product/:id
+#DELETE  /rest/bakery/product/:id
