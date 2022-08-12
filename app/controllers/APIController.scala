@@ -35,4 +35,14 @@ class APIController @Inject() (
         Ok(databaseTables)
       }
   }
+
+//  def createProduct() = Action.async { implicit request: Request[AnyContent] =>
+//    Ok("new item added")
+//  }
+
+  def getAllProducts() = Action.async { implicit request: Request[AnyContent] =>
+    bakeryDB.getAllProducts.map { allProducts =>
+      Ok(allProducts)
+    }
+  }
 }
