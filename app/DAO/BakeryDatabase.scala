@@ -69,7 +69,7 @@ class BakeryDatabase @Inject() (
           val statement = conn.prepareStatement("SELECT * FROM product;")
           val selectResult = statement.executeQuery()
           var returnStr = ""
-          var idx = 1;
+          var idx = 1
           while (selectResult.next()) {
             returnStr += "Item " + idx + ":: id: " + selectResult.getString(
               "id"
@@ -94,11 +94,14 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def getProductById: Future[String] = {
+  def getProductById(id: String): Future[String] = {
     Future {
       db.withConnection { conn =>
         try {
-          val stmnt = conn.prepareStatement("SELECT ")
+          val statement =
+            conn.prepareStatement("SELECT * FROM product WHERE id = asdf")
+          val result = statement.executeQuery()
+          result.toString //placeholder
         } catch {
           case e: Exception => e.printStackTrace().toString
         }
