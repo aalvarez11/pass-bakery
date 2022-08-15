@@ -43,8 +43,8 @@ class APIController @Inject() (
   def getProduct(id: String) = Action.async {
     implicit request: Request[AnyContent] =>
       bakeryDB.getProductById(id).map {
+        case ""                => NotFound("No Product Found")
         case myProduct @ found => Ok(myProduct.toString)
-        case ""                => NotFound("Product not found.")
       }
   }
 
