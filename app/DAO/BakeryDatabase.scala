@@ -98,10 +98,30 @@ class BakeryDatabase @Inject() (
     Future {
       db.withConnection { conn =>
         try {
-          val statement =
-            conn.prepareStatement("SELECT * FROM product WHERE id = asdf")
-          val result = statement.executeQuery()
-          result.toString //placeholder
+          val statement = {
+            conn.prepareStatement("SELECT * FROM product WHERE id::text = ?")
+          }
+          statement.setString(1, id)
+
+          println(statement.toString)
+          val selectResult = statement.executeQuery()
+          var returnStr = ""
+          while (selectResult.next()) {
+            returnStr += "id: " + selectResult.getString(
+              "id"
+            ) + ", name: " + selectResult.getString(
+              "name"
+            ) + ", quantity: " + selectResult.getInt(
+              "quantity"
+            ) + ", price: " + selectResult.getDouble(
+              "price"
+            ) + ", created at: " + selectResult.getTimestamp(
+              "created_at"
+            ) + ", updated at: " + selectResult.getTimestamp(
+              "updated_at"
+            )
+          }
+          returnStr
         } catch {
           case e: Exception => e.printStackTrace().toString
         }
