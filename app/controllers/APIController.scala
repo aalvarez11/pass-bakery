@@ -36,10 +36,6 @@ class APIController @Inject() (
       }
   }
 
-//  def createProduct() = Action.async { implicit request: Request[AnyContent] =>
-//    Ok("new item added")
-//  }
-
   def getProduct(id: String) = Action.async {
     implicit request: Request[AnyContent] =>
       bakeryDB.getProductById(id).map {
