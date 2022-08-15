@@ -94,7 +94,7 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def getProductById(id: String): Future[String] = {
+  def getProductById(id: String): Future[Option[String]] = {
     Future {
       db.withConnection { conn =>
         try {
@@ -105,25 +105,28 @@ class BakeryDatabase @Inject() (
 
           println(statement.toString)
           val selectResult = statement.executeQuery()
-          var returnStr = ""
-          while (selectResult.next()) {
-            returnStr += "id: " + selectResult.getString(
-              "id"
-            ) + ", name: " + selectResult.getString(
-              "name"
-            ) + ", quantity: " + selectResult.getInt(
-              "quantity"
-            ) + ", price: " + selectResult.getDouble(
-              "price"
-            ) + ", created at: " + selectResult.getTimestamp(
-              "created_at"
-            ) + ", updated at: " + selectResult.getTimestamp(
-              "updated_at"
+          val result = if (selectResult.next()) {
+            Some(
+              "id: " + selectResult.getString(
+                "id"
+              ) + ", name: " + selectResult.getString(
+                "name"
+              ) + ", quantity: " + selectResult.getInt(
+                "quantity"
+              ) + ", price: " + selectResult.getDouble(
+                "price"
+              ) + ", created at: " + selectResult.getTimestamp(
+                "created_at"
+              ) + ", updated at: " + selectResult.getTimestamp(
+                "updated_at"
+              )
             )
+          } else {
+            None
           }
-          returnStr
+          result
         } catch {
-          case e: Exception => e.printStackTrace().toString
+          case e: Exception => Option(e.printStackTrace().toString)
         }
       }
     }
