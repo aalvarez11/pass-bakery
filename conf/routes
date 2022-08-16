@@ -11,9 +11,10 @@ GET     /hello                      controllers.HomeController.hello()
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
 # API endpoints
-GET      /pass-bakery/status         controllers.APIController.getStatus()
-GET      /pass-bakery/db-tables      controllers.APIController.getDatabaseTables()
+GET     /pass-bakery/status         controllers.APIController.getStatus()
+GET     /pass-bakery/db-tables      controllers.APIController.getDatabaseTables()
 GET     /rest/bakery/product/:id    controllers.APIController.getProduct(id: String)
 
 # testing route to make sure the product table is returned
-GET      /rest/bakery/all-products   controllers.APIController.getAllProducts()
+GET     /rest/bakery/all-products   controllers.APIController.getAllProducts()
+GET     /rest/bakery/prod/:id       controllers.APIController.getProductDoobie(id: String)
