@@ -12,6 +12,10 @@ Scala training project
 1. Install [Docker](https://www.docker.com/products/docker-desktop/) and  [postgresql](https://www.postgresql.org/download/) on your machine, if not installed already.
 2. Launch Docker (this app expects the latest postgres alpine)
 3. Run the database through terminal commands
+   1. If setting up the Docker container for the first time:
+   2. `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -p 5432:5432 -d postgres:alpine`
+   3. If the Docker container has already been set up, and is running:
+   4. `docker exec -it pass-bakery-postgres bash`
 4. Launch the app on a separate terminal tab/window inside the project root with `sbt run`
 
 ### Docker Setup Cheatsheet
