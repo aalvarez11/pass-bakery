@@ -8,9 +8,6 @@ import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 
-/** This controller creates an `Action` to handle HTTP requests to the
-  * application's home page.
-  */
 @Singleton
 class APIController @Inject() (
     val controllerComponents: ControllerComponents,
@@ -48,5 +45,13 @@ class APIController @Inject() (
     bakeryDB.getAllProducts.map { allProducts =>
       Ok(allProducts)
     }
+  }
+
+  def getProductDoobie(id: String) = Action.async {
+    implicit request: Request[AnyContent] =>
+      bakeryDB.getProductByIdDoobie(id).map {
+        case None            => NotFound("No Product Found")
+        case Some(myProduct) => Ok(myProduct.id)
+      }
   }
 }
