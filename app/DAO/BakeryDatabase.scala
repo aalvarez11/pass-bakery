@@ -1,5 +1,13 @@
 package DAO
 
+import doobie._
+import doobie.implicits._
+import cats._
+import cats.effect._
+import cats.effect.unsafe.implicits.global
+import cats.implicits._
+import doobie.util.transactor.Transactor.Aux
+
 import javax.inject.Inject
 import play.api.db.Database
 
@@ -11,6 +19,13 @@ class BakeryDatabase @Inject() (
     db: Database,
     implicit val databaseExecutionContext: DatabaseExecutionContext
 ) {
+
+  val xa: Transactor[IO] = Transactor.fromDriverManager[IO](
+    "org.postgresql.Driver", // postgres driver
+    "jdbc:postgresql://localhost:5432/pass_bakery_db", // connect URL
+    "user",
+    "pass"
+  )
 
   def getDatabaseTables: Future[String] = {
     Future {
@@ -68,6 +83,14 @@ class BakeryDatabase @Inject() (
     }
   }
 
+  def getProductByIdDoobie(id: String): Future[Option[Product]] = {
+    val query =
+      sql"SELECT id, name FROM product where id::text = $id".query[Product]
+    val action = query.option
+    println(action.toString())
+    action.transact(xa).unsafeToFuture()
+  }
+
   def getProductById(id: String): Future[Option[String]] = {
     Future {
       db.withConnection { conn =>
@@ -106,3 +129,12 @@ class BakeryDatabase @Inject() (
     }
   }
 }
+
+case class Product(
+    id: String,
+    name: String,
+    quantity: Int,
+    price: Double,
+    createdAt: String,
+    updatedAt: String
+)
