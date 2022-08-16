@@ -36,32 +36,6 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def addNewProduct(inJson: JsValue): Future[String] = {
-    Future {
-      db.withConnection { conn =>
-        val t = ""
-
-        try {
-
-          /** the following must be done to add a new record/row to a table:
-            *    1. establish a connection to the database
-            *    2. connect to the table that will be updated (should this be a const val within this class?)
-            *    3. parse json object for column values to be inserted in the new row
-            *    4. insert the values to the table
-            *    4. commit the transaction, rollback if you can't
-            */
-          val statement =
-            conn.prepareStatement("INSERT INTO product() VALUES ()")
-          val insertResult = statement.executeQuery()
-        } catch {
-          case e: Exception => e.printStackTrace().toString
-        }
-
-        t
-      }
-    }
-  }
-
   def getAllProducts: Future[String] = {
     Future {
       db.withConnection { conn =>
