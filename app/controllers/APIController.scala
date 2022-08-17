@@ -1,6 +1,7 @@
 package controllers
 
 import DAO.BakeryDatabase
+import play.api.libs.json.Json
 import services.StatusInfoService
 
 import javax.inject._
@@ -39,8 +40,7 @@ class APIController @Inject() (
         case None => NotFound("No Product Found")
         case Some(myProduct) =>
           Ok(
-            myProduct.name + ", qty: " + myProduct.quantity + ", price: " + myProduct.price +
-              ", created at: " + myProduct.createdAt + ", updated at: " + myProduct.updatedAt
+            Json.toJson(myProduct)
           )
       }
   }
