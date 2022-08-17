@@ -85,7 +85,7 @@ class BakeryDatabase @Inject() (
 
   def getProductByIdDoobie(id: String): Future[Option[Product]] = {
     val query =
-      sql"SELECT id, name FROM product where id::text = $id".query[Product]
+      sql"""SELECT * FROM product where id::text = $id""".query[Product]
     val action = query.option
     println(action.toString())
     action.transact(xa).unsafeToFuture()
