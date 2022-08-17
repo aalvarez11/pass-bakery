@@ -83,50 +83,11 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def getProductByIdDoobie(id: String): Future[Option[Product]] = {
+  def getProductById(id: String): Future[Option[Product]] = {
     val query =
       sql"""SELECT * FROM product where id::text = $id""".query[Product]
     val action = query.option
-    println(action.toString())
     action.transact(xa).unsafeToFuture()
-  }
-
-  def getProductById(id: String): Future[Option[String]] = {
-    Future {
-      db.withConnection { conn =>
-        try {
-          val statement = {
-            conn.prepareStatement("SELECT * FROM product WHERE id::text = ?")
-          }
-          statement.setString(1, id)
-
-          println(statement.toString)
-          val selectResult = statement.executeQuery()
-          val result = if (selectResult.next()) {
-            Some(
-              "id: " + selectResult.getString(
-                "id"
-              ) + ", name: " + selectResult.getString(
-                "name"
-              ) + ", quantity: " + selectResult.getInt(
-                "quantity"
-              ) + ", price: " + selectResult.getDouble(
-                "price"
-              ) + ", created at: " + selectResult.getTimestamp(
-                "created_at"
-              ) + ", updated at: " + selectResult.getTimestamp(
-                "updated_at"
-              )
-            )
-          } else {
-            None
-          }
-          result
-        } catch {
-          case e: Exception => Option(e.printStackTrace().toString)
-        }
-      }
-    }
   }
 }
 

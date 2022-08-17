@@ -36,8 +36,12 @@ class APIController @Inject() (
   def getProduct(id: String) = Action.async {
     implicit request: Request[AnyContent] =>
       bakeryDB.getProductById(id).map {
-        case None            => NotFound("No Product Found")
-        case Some(myProduct) => Ok(myProduct.toString)
+        case None => NotFound("No Product Found")
+        case Some(myProduct) =>
+          Ok(
+            myProduct.name + ", qty: " + myProduct.quantity + ", price: " + myProduct.price +
+              ", created at: " + myProduct.createdAt + ", updated at: " + myProduct.updatedAt
+          )
       }
   }
 
@@ -45,16 +49,5 @@ class APIController @Inject() (
     bakeryDB.getAllProducts.map { allProducts =>
       Ok(allProducts)
     }
-  }
-
-  def getProductDoobie(id: String) = Action.async {
-    implicit request: Request[AnyContent] =>
-      bakeryDB.getProductByIdDoobie(id).map {
-        case None => NotFound("No Product Found")
-        case Some(myProduct) =>
-          Ok(
-            myProduct.name + ", qty: " + myProduct.quantity + ", price: " + myProduct.price
-          )
-      }
   }
 }

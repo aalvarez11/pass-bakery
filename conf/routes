@@ -17,4 +17,3 @@ GET     /rest/bakery/product/:id    controllers.APIController.getProduct(id: Str
 
 # testing route to make sure the product table is returned
 GET     /rest/bakery/all-products   controllers.APIController.getAllProducts()
-GET     /rest/bakery/prod/:id       controllers.APIController.getProductDoobie(id: String)
