@@ -6,26 +6,21 @@ import cats._
 import cats.effect._
 import cats.effect.unsafe.implicits.global
 import cats.implicits._
-import doobie.util.transactor.Transactor.Aux
 
 import javax.inject.Inject
 import play.api.db.Database
 
 import scala.concurrent.Future
-import models.DatabaseExecutionContext
-import play.api.libs.json.JsValue
+import models.{BakeryTransactor, DatabaseExecutionContext}
+import play.api.libs.json._
+
+import java.time.LocalDateTime
 
 class BakeryDatabase @Inject() (
     db: Database,
+    bakeryTransactor: BakeryTransactor,
     implicit val databaseExecutionContext: DatabaseExecutionContext
 ) {
-
-  val xa: Transactor[IO] = Transactor.fromDriverManager[IO](
-    "org.postgresql.Driver", // postgres driver
-    "jdbc:postgresql://localhost:5432/pass_bakery_db", // connect URL
-    "user",
-    "pass"
-  )
 
   def getDatabaseTables: Future[String] = {
     Future {
@@ -85,9 +80,12 @@ class BakeryDatabase @Inject() (
 
   def getProductById(id: String): Future[Option[Product]] = {
     val query =
-      sql"""SELECT * FROM product where id::text = $id""".query[Product]
-    val action = query.option
-    action.transact(xa).unsafeToFuture()
+      sql"""SELECT * FROM product where id::text = $id"""
+        .query[Product]
+        .option
+    query
+      .transact(bakeryTransactor.xa)
+      .unsafeToFuture()
   }
 }
 
@@ -99,3 +97,7 @@ case class Product(
     createdAt: String,
     updatedAt: String
 )
+
+object Product {
+  implicit val productWrites: OWrites[Product] = Json.writes[Product]
+}
