@@ -79,11 +79,9 @@ class BakeryDatabase @Inject() (
   }
 
   def getProductById(id: String): Future[Option[Product]] = {
-    val query =
-      sql"""SELECT * FROM product where id::text = $id"""
-        .query[Product]
-        .option
-    query
+    sql"""SELECT * FROM product where id::text = $id"""
+      .query[Product]
+      .option
       .transact(bakeryTransactor.xa)
       .unsafeToFuture()
   }
