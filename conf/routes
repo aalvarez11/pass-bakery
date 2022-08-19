@@ -15,6 +15,7 @@ GET     /pass-bakery/status         controllers.APIController.getStatus()
 GET     /pass-bakery/db-tables      controllers.APIController.getDatabaseTables()
 POST    /rest/bakery/product        controllers.APIController.createProduct()
 GET     /rest/bakery/product/:id    controllers.APIController.getProduct(id: String)
+PUT     /rest/bakery/product/:id    controllers.APIController.updateProduct(id: String)
 
 # testing route to make sure the product table is returned
 GET     /rest/bakery/all-products   controllers.APIController.getAllProducts()
