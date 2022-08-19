@@ -2,6 +2,9 @@ package DAO
 
 import doobie._
 import doobie.implicits._
+import doobie.implicits.javasql._
+import doobie.postgres.implicits._
+import doobie.postgres.pgisimplicits._
 import cats._
 import cats.effect._
 import cats.effect.unsafe.implicits.global
@@ -14,7 +17,7 @@ import scala.concurrent.Future
 import models.{BakeryTransactor, DatabaseExecutionContext}
 import play.api.libs.json._
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 class BakeryDatabase @Inject() (
     db: Database,
@@ -85,6 +88,23 @@ class BakeryDatabase @Inject() (
       .transact(bakeryTransactor.xa)
       .unsafeToFuture()
   }
+
+  def createProduct(newProduct: JsValue): Int = {
+
+    /** Steps for creating a record
+      *  1. bring in the json, everything should be provided except for the uuid
+      *  2. use query.update to commit the record
+      *  3. run the transaction
+      *  4. return a variable the controller can check to know the transaction succeeded (201 Created)
+      */
+    val newName = (newProduct \ "name").asOpt[String]
+    val newQty = (newProduct \ "quantity").asOpt[Int]
+    val newPrice = (newProduct \ "price").asOpt[Double]
+    val newStamp = OffsetDateTime.now()
+    sql"""INSERT INTO product VALUES (gen_random_uuid(), $newName, $newQty, $newPrice, $newStamp, $newStamp)""".update.run
+      .transact(bakeryTransactor.xa)
+      .unsafeRunSync()
+  }
 }
 
 case class Product(
@@ -92,8 +112,8 @@ case class Product(
     name: String,
     quantity: Int,
     price: Double,
-    createdAt: String,
-    updatedAt: String
+    createdAt: OffsetDateTime,
+    updatedAt: OffsetDateTime
 )
 
 object Product {
