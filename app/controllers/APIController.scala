@@ -24,7 +24,7 @@ class APIController @Inject() (
     * }
     */
   def getStatus() = Action { implicit request: Request[AnyContent] =>
-    Ok(statInfo.getUserStatus())
+    Ok(Json.prettyPrint(statInfo.getUserStatus()))
   }
 
   def getDatabaseTables() = Action.async {
@@ -57,7 +57,7 @@ class APIController @Inject() (
         case None => NotFound("No Product Found")
         case Some(myProduct) =>
           Ok(
-            Json.toJson(myProduct)
+            Json.prettyPrint(Json.toJson(myProduct))
           )
       }
   }
