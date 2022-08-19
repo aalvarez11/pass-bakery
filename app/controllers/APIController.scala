@@ -38,7 +38,7 @@ class APIController @Inject() (
     val reqJson = request.body.asJson
     Future {
       reqJson match {
-        case None => BadRequest("no request body found")
+        case None => BadRequest("No request body found")
         case Some(newProduct) => {
           val passProductJson = newProduct.validate[productUpdateRequest]
           if (passProductJson.isSuccess) {
@@ -46,7 +46,7 @@ class APIController @Inject() (
             if (rowsUpdated == 1) {
               Ok("New record added")
             } else {
-              InternalServerError("Couldn't create the row")
+              InternalServerError("Couldn't create the record")
             }
           } else {
             BadRequest("Json was incorrectly structured")
@@ -64,6 +64,35 @@ class APIController @Inject() (
           Ok(
             Json.prettyPrint(Json.toJson(myProduct))
           )
+      }
+  }
+
+  def updateProduct(id: String) = Action.async {
+    implicit request: Request[AnyContent] =>
+      bakeryDB.getProductById(id).map {
+        case None => NotFound("No Product Found")
+        case Some(myProduct) =>
+          val requestJson = request.body.asJson
+          Future {
+            requestJson match {
+              case None => BadRequest("No request body found")
+              case Some(updateProduct) => {
+                val ProductJsonResult =
+                  updateProduct.validate[productUpdateRequest]
+                if (ProductJsonResult.isSuccess) {
+                  val rowsUpdated =
+                    bakeryDB.updateProduct(myProduct.id, updateProduct)
+                  if (rowsUpdated == 1) {
+                    Ok("Record updated")
+                  } else {
+                    InternalServerError("Couldn't update the record")
+                  }
+                } else {
+                  BadRequest("Json was incorrectly structured")
+                }
+              }
+            }
+          }
       }
   }
 
