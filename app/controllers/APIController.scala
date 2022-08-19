@@ -40,11 +40,16 @@ class APIController @Inject() (
       reqJson match {
         case None => BadRequest("no request body found")
         case Some(newProduct) => {
-          val rowsUpdated = bakeryDB.createProduct(newProduct)
-          if (rowsUpdated == 1) {
-            Created("New record added")
+          val passProductJson = newProduct.validate[productUpdateRequest]
+          if (passProductJson.isSuccess) {
+            val rowsUpdated = bakeryDB.createProduct(newProduct)
+            if (rowsUpdated == 1) {
+              Ok("New record added")
+            } else {
+              InternalServerError("Couldn't create the row")
+            }
           } else {
-            InternalServerError("Couldn't create the row")
+            BadRequest("Json was incorrectly structured")
           }
         }
       }
@@ -67,4 +72,15 @@ class APIController @Inject() (
       Ok(allProducts)
     }
   }
+}
+
+case class productUpdateRequest(
+    name: String,
+    quantity: Int,
+    price: Double
+)
+
+object productUpdateRequest {
+  implicit val requestReads: Format[productUpdateRequest] =
+    Json.format[productUpdateRequest]
 }
