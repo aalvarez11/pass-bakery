@@ -12,7 +12,7 @@ Scala training project
 1. Install [Docker](https://www.docker.com/products/docker-desktop/) and  [postgresql](https://www.postgresql.org/download/) on your machine, if not installed already.
 2. Launch Docker (this app expects the latest postgres alpine)
 3. Run the database through terminal commands
-   1. Create the docker container, or start it if it exists but is stopped:
+   1. Create the docker container (after creation you can run/press play on the container inside the desktop app):
    2. `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=pass_bakery_db -p 5432:5432 -d postgres:alpine`
    3. Access the docker postgres database (enter `pass` when promtped):
    4. `psql -h localhost -p 5432 -d pass_bakery_db -U user`
