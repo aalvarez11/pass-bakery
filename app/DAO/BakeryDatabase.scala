@@ -82,7 +82,7 @@ class BakeryDatabase @Inject() (
   }
 
   def getProductById(id: String): Future[Option[Product]] = {
-    sql"""SELECT * FROM product where id::text = $id"""
+    sql"""SELECT * FROM product WHERE id::text = $id"""
       .query[Product]
       .option
       .transact(bakeryTransactor.xa)
@@ -102,6 +102,47 @@ class BakeryDatabase @Inject() (
     val newPrice = (newProduct \ "price").asOpt[Double]
     val newStamp = OffsetDateTime.now()
     sql"""INSERT INTO product VALUES (gen_random_uuid(), $newName, $newQty, $newPrice, $newStamp, $newStamp)""".update.run
+      .transact(bakeryTransactor.xa)
+      .unsafeRunSync()
+  }
+
+  def updateProduct(id: String, changesJson: JsValue): Int = {
+
+    /** Steps for updating a record
+      *  1. bring in the json, json should be the values to change:
+      *     - name, qty, price, name+qty, name+price, qty+price, name+qty+price
+      *  2. check what values are given to update, form query on these params
+      *  3. query with .update on the given id
+      *  4. run the transaction
+      */
+    val newName = (changesJson \ "name").asOpt[String]
+    val newQty = (changesJson \ "quantity").asOpt[Int]
+    val newPrice = (changesJson \ "price").asOpt[Double]
+    val newStamp = OffsetDateTime.now()
+    var query = sql""""""
+    if (newName.isDefined && newQty.isDefined && newPrice.isDefined) {
+      query =
+        sql"""UPDATE product SET name = $newName, quantity = $newQty, price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
+    } else if (newName.isDefined && newQty.isDefined && newPrice.isEmpty) {
+      query =
+        sql"""UPDATE product SET name = $newName, quantity = $newQty, updated_at = $newStamp WHERE id::text = $id"""
+    } else if (newName.isDefined && newQty.isEmpty && newPrice.isDefined) {
+      query =
+        sql"""UPDATE product SET name = $newName, price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
+    } else if (newName.isEmpty && newQty.isDefined && newPrice.isDefined) {
+      query =
+        sql"""UPDATE product SET quantity = $newQty, price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
+    } else if (newName.isDefined && newQty.isEmpty && newPrice.isEmpty) {
+      query =
+        sql"""UPDATE product SET name = $newName, updated_at = $newStamp WHERE id::text = $id"""
+    } else if (newName.isEmpty && newQty.isDefined && newPrice.isEmpty) {
+      query =
+        sql"""UPDATE product SET quantity = $newQty, updated_at = $newStamp WHERE id::text = $id"""
+    } else {
+      query =
+        sql"""UPDATE product SET price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
+    }
+    query.update.run
       .transact(bakeryTransactor.xa)
       .unsafeRunSync()
   }
