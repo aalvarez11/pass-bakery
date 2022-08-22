@@ -89,16 +89,20 @@ class APIController @Inject() (
             case Some(updateProduct) => {
               val productJsonResult =
                 updateProduct.validate[ProductUpdateRequest]
-              if (productJsonResult.isSuccess) {
-                val rowsUpdated =
-                  bakeryDB.updateProduct(id, productJsonResult.get)
-                if (rowsUpdated == 1) {
-                  Ok("Record updated")
-                } else {
-                  InternalServerError("Couldn't update the record")
+              productJsonResult match {
+                case JsSuccess(productUpdateRequest, path) => {
+                  val rowsUpdated =
+                    bakeryDB.updateProduct(id, productUpdateRequest)
+                  if (rowsUpdated == 1) {
+                    Ok("Record updated")
+                  } else {
+                    InternalServerError("Couldn't update the record")
+                  }
                 }
-              } else {
-                BadRequest("Json was incorrectly structured")
+                case JsError(exception) =>
+                  BadRequest(
+                    "Json includes mistyped data, please double check the data types of information you are passing"
+                  )
               }
             }
           }
