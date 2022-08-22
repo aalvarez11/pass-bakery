@@ -106,6 +106,20 @@ class APIController @Inject() (
       }
   }
 
+  def deleteProduct(id: String) = Action.async {
+    implicit request: Request[AnyContent] =>
+      bakeryDB.getProductById(id).map {
+        case None => NotFound("No product with that id found")
+        case Some(myProduct) =>
+          val rowsDeleted = bakeryDB.deleteProduct(id)
+          if (rowsDeleted == 1) {
+            Ok("Record deleted")
+          } else {
+            InternalServerError("Couldn't delete the record")
+          }
+      }
+  }
+
   def getAllProducts() = Action.async { implicit request: Request[AnyContent] =>
     bakeryDB.getAllProducts.map { allProducts =>
       Ok(allProducts)

@@ -157,6 +157,12 @@ class BakeryDatabase @Inject() (
       case (None, None, None) => 0
     }
   }
+
+  def deleteProduct(id: String): Int = {
+    sql"""DELETE FROM product WHERE id::text = $id""".update.run
+      .transact(bakeryTransactor.xa)
+      .unsafeRunSync()
+  }
 }
 
 case class Product(
