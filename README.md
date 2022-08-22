@@ -21,8 +21,9 @@ Scala training project
 
 ### Docker Cheatsheet
 1. **ONE TIME!** Download latest postgres alpine image: `docker pull postgres:alpine`
-2. Create/start the Docker container: `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -p 5432:5432 -d postgres:alpine`
+2. Create/start the Docker container: `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=pass_bakery_db -p 5432:5432 -d postgres:alpine`
 3. Access the db: `psql -h localhost -p 5432 -d pass_bakery_db -U user` and enter `pass` when prompted for the password
+   1. **IMPORTANT:** if you cannot access the container from the terminal with this command, stop the docker container (easy through the desktop app), delete the container, then start from step 2 again (docker run...)
 4. Additional Notes:
    * Check if `pass_bakery_db` exists by listing databases with `\l`
    * If needed, connect to the database with `\c pass_bakery_db`
