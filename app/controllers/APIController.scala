@@ -40,7 +40,7 @@ class APIController @Inject() (
       reqJson match {
         case None => BadRequest("No request body found")
         case Some(newProduct) => {
-          val passProductJson = newProduct.validate[productUpdateRequest]
+          val passProductJson = newProduct.validate[ProductUpdateRequest]
           if (passProductJson.isSuccess) {
             val rowsUpdated = bakeryDB.createProduct(passProductJson.get)
             if (rowsUpdated == 1) {
@@ -88,7 +88,7 @@ class APIController @Inject() (
             case None => BadRequest("No request body found")
             case Some(updateProduct) => {
               val productJsonResult =
-                updateProduct.validate[productUpdateRequest]
+                updateProduct.validate[ProductUpdateRequest]
               if (productJsonResult.isSuccess) {
                 val rowsUpdated =
                   bakeryDB.updateProduct(id, productJsonResult.get)
@@ -127,13 +127,13 @@ class APIController @Inject() (
   }
 }
 
-case class productUpdateRequest(
+case class ProductUpdateRequest(
     name: Option[String],
     quantity: Option[Int],
     price: Option[Double]
 )
 
-object productUpdateRequest {
-  implicit val requestReads: Format[productUpdateRequest] =
-    Json.format[productUpdateRequest]
+object ProductUpdateRequest {
+  implicit val requestReads: Format[ProductUpdateRequest] =
+    Json.format[ProductUpdateRequest]
 }

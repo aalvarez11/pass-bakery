@@ -9,7 +9,7 @@ import cats._
 import cats.effect._
 import cats.effect.unsafe.implicits.global
 import cats.implicits._
-import controllers.productUpdateRequest
+import controllers.ProductUpdateRequest
 
 import javax.inject.Inject
 import play.api.db.Database
@@ -90,7 +90,7 @@ class BakeryDatabase @Inject() (
       .unsafeToFuture()
   }
 
-  def createProduct(newProduct: productUpdateRequest): Int = {
+  def createProduct(newProduct: ProductUpdateRequest): Int = {
 
     /** Steps for creating a record
       *  1. bring in the json, everything should be provided except for the uuid
@@ -98,11 +98,8 @@ class BakeryDatabase @Inject() (
       *  3. run the transaction
       *  4. return a variable the controller can check to know the transaction succeeded (201 Created)
       */
-    val newName = newProduct.name
-    val newQty = newProduct.quantity
-    val newPrice = newProduct.price
     val newStamp = OffsetDateTime.now()
-    (newName, newQty, newPrice) match {
+    (newProduct.name, newProduct.quantity, newProduct.price) match {
       case (Some(name), Some(quantity), Some(price)) =>
         sql"""INSERT INTO product VALUES (gen_random_uuid(), $name, $quantity, $price, $newStamp, $newStamp)""".update.run
           .transact(bakeryTransactor.xa)
@@ -111,7 +108,7 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def updateProduct(id: String, changesProduct: productUpdateRequest): Int = {
+  def updateProduct(id: String, changesProduct: ProductUpdateRequest): Int = {
 
     /** Steps for updating a record
       *  1. bring in the json, json should be the values to change (8 combinations):
