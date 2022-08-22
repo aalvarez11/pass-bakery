@@ -9,6 +9,7 @@ import cats._
 import cats.effect._
 import cats.effect.unsafe.implicits.global
 import cats.implicits._
+import controllers.productUpdateRequest
 
 import javax.inject.Inject
 import play.api.db.Database
@@ -89,7 +90,7 @@ class BakeryDatabase @Inject() (
       .unsafeToFuture()
   }
 
-  def createProduct(newProduct: JsValue): Int = {
+  def createProduct(newProduct: productUpdateRequest): Int = {
 
     /** Steps for creating a record
       *  1. bring in the json, everything should be provided except for the uuid
@@ -97,54 +98,64 @@ class BakeryDatabase @Inject() (
       *  3. run the transaction
       *  4. return a variable the controller can check to know the transaction succeeded (201 Created)
       */
-    val newName = (newProduct \ "name").asOpt[String]
-    val newQty = (newProduct \ "quantity").asOpt[Int]
-    val newPrice = (newProduct \ "price").asOpt[Double]
+    val newName = newProduct.name
+    val newQty = newProduct.quantity
+    val newPrice = newProduct.price
     val newStamp = OffsetDateTime.now()
-    sql"""INSERT INTO product VALUES (gen_random_uuid(), $newName, $newQty, $newPrice, $newStamp, $newStamp)""".update.run
-      .transact(bakeryTransactor.xa)
-      .unsafeRunSync()
+    (newName, newQty, newPrice) match {
+      case (Some(name), Some(quantity), Some(price)) =>
+        sql"""INSERT INTO product VALUES (gen_random_uuid(), $name, $quantity, $price, $newStamp, $newStamp)""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case _ => 0
+    }
   }
 
-  def updateProduct(id: String, changesJson: JsValue): Int = {
+  def updateProduct(id: String, changesProduct: productUpdateRequest): Int = {
 
     /** Steps for updating a record
-      *  1. bring in the json, json should be the values to change:
-      *     - name, qty, price, name+qty, name+price, qty+price, name+qty+price
+      *  1. bring in the json, json should be the values to change (8 combinations):
+      *     - none, name, qty, price, name+qty, name+price, qty+price, name+qty+price
       *  2. check what values are given to update, form query on these params
       *  3. query with .update on the given id
       *  4. run the transaction
       */
-    val newName = (changesJson \ "name").asOpt[String]
-    val newQty = (changesJson \ "quantity").asOpt[Int]
-    val newPrice = (changesJson \ "price").asOpt[Double]
+    val newName = changesProduct.name
+    val newQty = changesProduct.quantity
+    val newPrice = changesProduct.price
     val newStamp = OffsetDateTime.now()
-    var query = sql""""""
-    if (newName.isDefined && newQty.isDefined && newPrice.isDefined) {
-      query =
-        sql"""UPDATE product SET name = $newName, quantity = $newQty, price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
-    } else if (newName.isDefined && newQty.isDefined && newPrice.isEmpty) {
-      query =
-        sql"""UPDATE product SET name = $newName, quantity = $newQty, updated_at = $newStamp WHERE id::text = $id"""
-    } else if (newName.isDefined && newQty.isEmpty && newPrice.isDefined) {
-      query =
-        sql"""UPDATE product SET name = $newName, price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
-    } else if (newName.isEmpty && newQty.isDefined && newPrice.isDefined) {
-      query =
-        sql"""UPDATE product SET quantity = $newQty, price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
-    } else if (newName.isDefined && newQty.isEmpty && newPrice.isEmpty) {
-      query =
-        sql"""UPDATE product SET name = $newName, updated_at = $newStamp WHERE id::text = $id"""
-    } else if (newName.isEmpty && newQty.isDefined && newPrice.isEmpty) {
-      query =
-        sql"""UPDATE product SET quantity = $newQty, updated_at = $newStamp WHERE id::text = $id"""
-    } else {
-      query =
-        sql"""UPDATE product SET price = $newPrice, updated_at = $newStamp WHERE id::text = $id"""
+
+    (newName, newQty, newPrice) match {
+      case (Some(name), Some(quantity), Some(price)) =>
+        sql"""UPDATE product SET name = $name, quantity = $quantity, price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case (Some(name), Some(quantity), None) =>
+        sql"""UPDATE product SET name = $name, quantity = $quantity, updated_at = $newStamp WHERE id::text = $id""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case (Some(name), None, Some(price)) =>
+        sql"""UPDATE product SET name = $name, price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case (None, Some(quantity), Some(price)) =>
+        sql"""UPDATE product SET quantity = $quantity, price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case (Some(name), None, None) =>
+        sql"""UPDATE product SET name = $name, updated_at = $newStamp WHERE id::text = $id""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case (None, Some(quantity), None) =>
+        sql"""UPDATE product SET quantity = $quantity, updated_at = $newStamp WHERE id::text = $id""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case (None, None, Some(price)) =>
+        sql"""UPDATE product SET price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case (None, None, None) => 0
     }
-    query.update.run
-      .transact(bakeryTransactor.xa)
-      .unsafeRunSync()
   }
 }
 
