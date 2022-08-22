@@ -42,7 +42,7 @@ class APIController @Inject() (
         case Some(newProduct) => {
           val passProductJson = newProduct.validate[productUpdateRequest]
           if (passProductJson.isSuccess) {
-            val rowsUpdated = bakeryDB.createProduct(newProduct)
+            val rowsUpdated = bakeryDB.createProduct(passProductJson.get)
             if (rowsUpdated == 1) {
               Ok("New record added")
             } else {
@@ -69,30 +69,40 @@ class APIController @Inject() (
 
   def updateProduct(id: String) = Action.async {
     implicit request: Request[AnyContent] =>
+      /** 1. get what is going to be updated in the request body
+        *  2. see if the item exists in the database, if not give a 404
+        *  3. found product -> start the update process:
+        *  4. see if the request body had json to process
+        *  5. validate the json to make sure it matches the case class
+        *  (this assumes non-update values will be passed as empty)
+        *  6. validate success means pass the id and body json to update method
+        *  7. only the record with the matching id should update, method should return 1 & 200/OK
+        *  (in case something other than 1 returns, respond with a 500/ServerError
+        *  8. validate fail means something in the json was off
+        */
+      val requestJson = request.body.asJson
       bakeryDB.getProductById(id).map {
         case None => NotFound("No Product Found")
-        case Some(myProduct) =>
-          val requestJson = request.body.asJson
-          Future {
-            requestJson match {
-              case None => BadRequest("No request body found")
-              case Some(updateProduct) => {
-                val ProductJsonResult =
-                  updateProduct.validate[productUpdateRequest]
-                if (ProductJsonResult.isSuccess) {
-                  val rowsUpdated =
-                    bakeryDB.updateProduct(myProduct.id, updateProduct)
-                  if (rowsUpdated == 1) {
-                    Ok("Record updated")
-                  } else {
-                    InternalServerError("Couldn't update the record")
-                  }
+        case Some(myProduct) => {
+          requestJson match {
+            case None => BadRequest("No request body found")
+            case Some(updateProduct) => {
+              val productJsonResult =
+                updateProduct.validate[productUpdateRequest]
+              if (productJsonResult.isSuccess) {
+                val rowsUpdated =
+                  bakeryDB.updateProduct(id, productJsonResult.get)
+                if (rowsUpdated == 1) {
+                  Ok("Record updated")
                 } else {
-                  BadRequest("Json was incorrectly structured")
+                  InternalServerError("Couldn't update the record")
                 }
+              } else {
+                BadRequest("Json was incorrectly structured")
               }
             }
           }
+        }
       }
   }
 
@@ -104,9 +114,9 @@ class APIController @Inject() (
 }
 
 case class productUpdateRequest(
-    name: String,
-    quantity: Int,
-    price: Double
+    name: Option[String],
+    quantity: Option[Int],
+    price: Option[Double]
 )
 
 object productUpdateRequest {
