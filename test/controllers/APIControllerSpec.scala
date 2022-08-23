@@ -226,6 +226,213 @@ class APIControllerSpec
       contentAsString(noBody) must include("No request body found")
     }
 
+    "return ok if an existing product was successfully updated with all 3 parameters" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsString("test"),
+          "price" -> JsNumber(5.00),
+          "quantity" -> JsNumber(5)
+        )
+      )
+      val controller = inject[APIController]
+      val successfulUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(successfulUpdate) mustBe OK
+      contentAsString(successfulUpdate) must include("Record updated")
+    }
+
+    "return ok if an existing product was successfully updated with 2 parameters: name and price" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsString("test"),
+          "price" -> JsNumber(5.00)
+        )
+      )
+      val controller = inject[APIController]
+      val successfulUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(successfulUpdate) mustBe OK
+      contentAsString(successfulUpdate) must include("Record updated")
+    }
+
+    "return ok if an existing product was successfully updated with 2 parameters: name and quantity" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsString("test"),
+          "quantity" -> JsNumber(5)
+        )
+      )
+      val controller = inject[APIController]
+      val successfulUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(successfulUpdate) mustBe OK
+      contentAsString(successfulUpdate) must include("Record updated")
+    }
+
+    "return ok if an existing product was successfully updated with 2 parameters: price and quantity" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "price" -> JsNumber(5.00),
+          "quantity" -> JsNumber(5)
+        )
+      )
+      val controller = inject[APIController]
+      val successfulUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(successfulUpdate) mustBe OK
+      contentAsString(successfulUpdate) must include("Record updated")
+    }
+
+    "return ok if an existing product was successfully updated with 1 parameter: name" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsString("test")
+        )
+      )
+      val controller = inject[APIController]
+      val successfulUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(successfulUpdate) mustBe OK
+      contentAsString(successfulUpdate) must include("Record updated")
+    }
+
+    "return ok if an existing product was successfully updated with 1 parameter: price" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "price" -> JsNumber(5.00)
+        )
+      )
+      val controller = inject[APIController]
+      val successfulUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(successfulUpdate) mustBe OK
+      contentAsString(successfulUpdate) must include("Record updated")
+    }
+
+    "return ok if an existing product was successfully updated with 1 parameter: quantity" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "quantity" -> JsNumber(5)
+        )
+      )
+      val controller = inject[APIController]
+      val successfulUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(successfulUpdate) mustBe OK
+      contentAsString(successfulUpdate) must include("Record updated")
+    }
+
+    "return bad request if a parameter is mistyped" in {
+      val badJson: JsValue = JsObject(
+        Seq(
+          "quantity" -> JsString("asdf")
+        )
+      )
+      val controller = inject[APIController]
+      val mistypedUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(badJson)
+        )
+      status(mistypedUpdate) mustBe BAD_REQUEST
+      contentAsString(mistypedUpdate) must include(
+        "Couldn't update the record with the given data, please make sure the body contains any"
+      )
+    }
+
+    "return bad request if 2 parameters are mistyped" in {
+      val badJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsNumber(4),
+          "quantity" -> JsString("asdf")
+        )
+      )
+      val controller = inject[APIController]
+      val mistypedUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(badJson)
+        )
+      status(mistypedUpdate) mustBe BAD_REQUEST
+      contentAsString(mistypedUpdate) must include(
+        "Couldn't update the record with the given data, please make sure the body contains any"
+      )
+    }
+
+    "return bad request if all 3 parameters are mistyped" in {
+      val badJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsNumber(4),
+          "price" -> JsBoolean(true),
+          "quantity" -> JsString("asdf")
+        )
+      )
+      val controller = inject[APIController]
+      val mistypedUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(badJson)
+        )
+      status(mistypedUpdate) mustBe BAD_REQUEST
+      contentAsString(mistypedUpdate) must include(
+        "Couldn't update the record with the given data, please make sure the body contains any"
+      )
+    }
+
+    "return bad request if 1 parameter is mistyped and all 3 are present" in {
+      val badJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsString("new name"),
+          "price" -> JsNumber(1.00),
+          "quantity" -> JsString("asdf")
+        )
+      )
+      val controller = inject[APIController]
+      val mistypedUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(badJson)
+        )
+      status(mistypedUpdate) mustBe BAD_REQUEST
+      contentAsString(mistypedUpdate) must include(
+        "Couldn't update the record with the given data, please make sure the body contains any"
+      )
+    }
+
+    "return bad request if a body with nothing inside is given" in {
+      val emptyJson: JsValue = JsObject(Seq())
+      val controller = inject[APIController]
+      val emptyUpdate = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(emptyJson)
+        )
+      status(emptyUpdate) mustBe BAD_REQUEST
+      contentAsString(emptyUpdate) must include(
+        "Couldn't update the record, please make sure the body contains"
+      )
+    }
   }
 
   "APIController DELETE" should {}
