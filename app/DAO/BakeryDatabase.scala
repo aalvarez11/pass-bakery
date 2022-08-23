@@ -19,6 +19,7 @@ import models.{BakeryTransactor, DatabaseExecutionContext}
 import play.api.libs.json._
 
 import java.time.OffsetDateTime
+import java.util.UUID
 
 class BakeryDatabase @Inject() (
     db: Database,
@@ -82,8 +83,8 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def getProductById(id: String): Future[Option[Product]] = {
-    sql"""SELECT * FROM product WHERE id::text = $id"""
+  def getProductById(id: UUID): Future[Option[Product]] = {
+    sql"""SELECT * FROM product WHERE id = $id"""
       .query[Product]
       .option
       .transact(bakeryTransactor.xa)
@@ -108,7 +109,7 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def updateProduct(id: String, changesProduct: ProductUpdateRequest): Int = {
+  def updateProduct(id: UUID, changesProduct: ProductUpdateRequest): Int = {
 
     /** Steps for updating a record
       *  1. bring in the json, json should be the values to change (8 combinations):
@@ -122,41 +123,31 @@ class BakeryDatabase @Inject() (
     val newPrice = changesProduct.price
     val newStamp = OffsetDateTime.now()
 
-    (newName, newQty, newPrice) match {
+    val query = (newName, newQty, newPrice) match {
       case (Some(name), Some(quantity), Some(price)) =>
-        sql"""UPDATE product SET name = $name, quantity = $quantity, price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
-          .transact(bakeryTransactor.xa)
-          .unsafeRunSync()
+        sql"""UPDATE product SET name = $name, quantity = $quantity, price = $price, updated_at = $newStamp WHERE id = $id"""
       case (Some(name), Some(quantity), None) =>
-        sql"""UPDATE product SET name = $name, quantity = $quantity, updated_at = $newStamp WHERE id::text = $id""".update.run
-          .transact(bakeryTransactor.xa)
-          .unsafeRunSync()
+        sql"""UPDATE product SET name = $name, quantity = $quantity, updated_at = $newStamp WHERE id = $id"""
       case (Some(name), None, Some(price)) =>
-        sql"""UPDATE product SET name = $name, price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
-          .transact(bakeryTransactor.xa)
-          .unsafeRunSync()
+        sql"""UPDATE product SET name = $name, price = $price, updated_at = $newStamp WHERE id = $id"""
       case (None, Some(quantity), Some(price)) =>
-        sql"""UPDATE product SET quantity = $quantity, price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
-          .transact(bakeryTransactor.xa)
-          .unsafeRunSync()
+        sql"""UPDATE product SET quantity = $quantity, price = $price, updated_at = $newStamp WHERE id = $id"""
       case (Some(name), None, None) =>
-        sql"""UPDATE product SET name = $name, updated_at = $newStamp WHERE id::text = $id""".update.run
-          .transact(bakeryTransactor.xa)
-          .unsafeRunSync()
+        sql"""UPDATE product SET name = $name, updated_at = $newStamp WHERE id = $id"""
       case (None, Some(quantity), None) =>
-        sql"""UPDATE product SET quantity = $quantity, updated_at = $newStamp WHERE id::text = $id""".update.run
-          .transact(bakeryTransactor.xa)
-          .unsafeRunSync()
+        sql"""UPDATE product SET quantity = $quantity, updated_at = $newStamp WHERE id = $id"""
       case (None, None, Some(price)) =>
-        sql"""UPDATE product SET price = $price, updated_at = $newStamp WHERE id::text = $id""".update.run
-          .transact(bakeryTransactor.xa)
-          .unsafeRunSync()
-      case (None, None, None) => 0
+        sql"""UPDATE product SET price = $price, updated_at = $newStamp WHERE id = $id"""
+      case (None, None, None) =>
+        sql""""""
     }
+    query.update.run
+      .transact(bakeryTransactor.xa)
+      .unsafeRunSync()
   }
 
-  def deleteProduct(id: String): Int = {
-    sql"""DELETE FROM product WHERE id::text = $id""".update.run
+  def deleteProduct(id: UUID): Int = {
+    sql"""DELETE FROM product WHERE id = $id""".update.run
       .transact(bakeryTransactor.xa)
       .unsafeRunSync()
   }
