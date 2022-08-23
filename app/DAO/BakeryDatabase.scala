@@ -118,12 +118,13 @@ class BakeryDatabase @Inject() (
       *  3. query with .update on the given id
       *  4. run the transaction
       */
-    val newName = changesProduct.name
-    val newQty = changesProduct.quantity
-    val newPrice = changesProduct.price
     val newStamp = OffsetDateTime.now()
 
-    val query = (newName, newQty, newPrice) match {
+    val query = (
+      changesProduct.name,
+      changesProduct.quantity,
+      changesProduct.price
+    ) match {
       case (Some(name), Some(quantity), Some(price)) =>
         sql"""UPDATE product SET name = $name, quantity = $quantity, price = $price, updated_at = $newStamp WHERE id = $id"""
       case (Some(name), Some(quantity), None) =>
