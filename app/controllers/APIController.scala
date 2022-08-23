@@ -100,12 +100,16 @@ class APIController @Inject() (
                   if (rowsUpdated == 1) {
                     Ok("Record updated")
                   } else {
-                    InternalServerError("Couldn't update the record")
+                    BadRequest(
+                      "Couldn't update the record, please make sure the body contains any " +
+                        "combination of the following information: name, quantity, price"
+                    )
                   }
                 }
                 case JsError(exception) =>
                   BadRequest(
-                    "Json includes mistyped data, please double check the data types of information you are passing"
+                    "Couldn't update the record with the given data, please make sure the body " +
+                      "contains any combination of the following information: name, quantity, price"
                   )
               }
             }
