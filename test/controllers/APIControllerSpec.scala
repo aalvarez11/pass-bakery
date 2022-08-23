@@ -10,6 +10,7 @@ import play.api.test._
 import play.api.test.Helpers._
 import services.StatusInfoService
 
+import java.util.UUID
 import javax.inject.Inject
 
 class APIControllerSpec
@@ -31,7 +32,7 @@ class APIControllerSpec
     "return the json of the specified product" in {
       val controller = inject[APIController]
       val productResult = controller
-        .getProduct("e69cf7fa-7b16-4636-a859-10d4675cfcc6")
+        .getProduct(UUID.fromString("e69cf7fa-7b16-4636-a859-10d4675cfcc6"))
         .apply(FakeRequest(GET, "/rest/bakery/product/:id"))
       status(productResult) mustBe OK
       contentAsString(productResult) must include("tres leches")
@@ -40,7 +41,7 @@ class APIControllerSpec
     "return 'product not found' for nonexistent item" in {
       val controller = inject[APIController]
       val productResult = controller
-        .getProduct("asdf-qwer-jkl-yuio")
+        .getProduct(UUID.fromString("00000000-0000-0000-0000-000000000000"))
         .apply(FakeRequest(GET, "/rest/bakery/product/:id"))
       status(productResult) mustBe NOT_FOUND
       contentAsString(productResult) must include("No Product Found")
@@ -82,7 +83,9 @@ class APIControllerSpec
           FakeRequest(POST, "/rest/bakery/product").withJsonBody(missingPrice)
         )
       status(incorrectBody) mustBe BAD_REQUEST
-      contentAsString(incorrectBody) must include("No request body found")
+      contentAsString(incorrectBody) must include(
+        "Couldn't create the record with the given data"
+      )
     }
 
     "return bad request if body is missing name" in {
@@ -99,7 +102,9 @@ class APIControllerSpec
           FakeRequest(POST, "/rest/bakery/product").withJsonBody(missingPrice)
         )
       status(incorrectBody) mustBe BAD_REQUEST
-      contentAsString(incorrectBody) must include("No request body found")
+      contentAsString(incorrectBody) must include(
+        "Couldn't create the record with the given data"
+      )
     }
 
     "return bad request if body is missing quantity" in {
@@ -116,7 +121,9 @@ class APIControllerSpec
           FakeRequest(POST, "/rest/bakery/product").withJsonBody(missingPrice)
         )
       status(incorrectBody) mustBe BAD_REQUEST
-      contentAsString(incorrectBody) must include("No request body found")
+      contentAsString(incorrectBody) must include(
+        "Couldn't create the record with the given data"
+      )
     }
 
     "return bad request if a body member is wrongly typed" in {
@@ -155,7 +162,7 @@ class APIControllerSpec
       contentAsString(correctBody) must include("New record added")
     }
 
-    "return product created if body is correctly structured but in odd order" in {
+    "return product created if body is correctly structured but is oddly ordered" in {
       val goodJson: JsValue = JsObject(
         Seq(
           "price" -> JsNumber(5.00),
@@ -191,7 +198,35 @@ class APIControllerSpec
     }
   }
 
-  "APIController PUT" should {}
+  "APIController PUT" should {
+    "return not found if the id is not present in the db" in {
+      val okJson: JsValue = JsObject(
+        Seq(
+          "name" -> JsString("test"),
+          "price" -> JsNumber(5.00),
+          "quantity" -> JsNumber(5)
+        )
+      )
+      val controller = inject[APIController]
+      val noIdFound = controller
+        .updateProduct(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+        .apply(
+          FakeRequest(PUT, "/rest/bakery/product/:id").withJsonBody(okJson)
+        )
+      status(noIdFound) mustBe NOT_FOUND
+      contentAsString(noIdFound) must include("No Product Found")
+    }
+
+    "return bad request if no body is present in the request" in {
+      val controller = inject[APIController]
+      val noBody = controller
+        .updateProduct(UUID.fromString("0a776c48-1ef0-4d2e-8fab-81d074b0c8d4"))
+        .apply(FakeRequest(PUT, "/rest/bakery/product/:id"))
+      status(noBody) mustBe BAD_REQUEST
+      contentAsString(noBody) must include("No request body found")
+    }
+
+  }
 
   "APIController DELETE" should {}
 }
