@@ -435,5 +435,25 @@ class APIControllerSpec
     }
   }
 
-  "APIController DELETE" should {}
+  "APIController DELETE" should {
+    "return not found if the product to be deleted isn't in the product table" in {
+      val controller = inject[APIController]
+      val deleteNotFound = controller
+        .deleteProduct(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+        .apply(FakeRequest(DELETE, "/rest/bakery/product/:id"))
+      status(deleteNotFound) mustBe NOT_FOUND
+      contentAsString(deleteNotFound) must include(
+        "No product with that id found"
+      )
+    }
+
+    "return ok if an existing product was deleted" in {
+      val controller = inject[APIController]
+      val deleteSuccess = controller
+        .deleteProduct(UUID.fromString("e69cf7fa-7b16-4636-a859-10d4675cfcc6"))
+        .apply(FakeRequest(DELETE, "/rest/bakery/product/:id"))
+      status(deleteSuccess) mustBe OK
+      contentAsString(deleteSuccess) must include("Record deleted")
+    }
+  }
 }
