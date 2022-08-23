@@ -7,6 +7,7 @@ import services.StatusInfoService
 import javax.inject._
 import play.api.mvc._
 
+import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -46,7 +47,10 @@ class APIController @Inject() (
             if (rowsUpdated == 1) {
               Ok("New record added")
             } else {
-              InternalServerError("Couldn't create the record")
+              BadRequest(
+                "Couldn't create the record with the given data, please make sure the body contains " +
+                  "the following information: name, quantity, price."
+              )
             }
           } else {
             BadRequest("Json was incorrectly structured")
@@ -56,7 +60,7 @@ class APIController @Inject() (
     }
   }
 
-  def getProduct(id: String) = Action.async {
+  def getProduct(id: UUID) = Action.async {
     implicit request: Request[AnyContent] =>
       bakeryDB.getProductById(id).map {
         case None => NotFound("No Product Found")
@@ -67,7 +71,7 @@ class APIController @Inject() (
       }
   }
 
-  def updateProduct(id: String) = Action.async {
+  def updateProduct(id: UUID) = Action.async {
     implicit request: Request[AnyContent] =>
       /** 1. get what is going to be updated in the request body
         *  2. see if the item exists in the database, if not give a 404
@@ -110,7 +114,7 @@ class APIController @Inject() (
       }
   }
 
-  def deleteProduct(id: String) = Action.async {
+  def deleteProduct(id: UUID) = Action.async {
     implicit request: Request[AnyContent] =>
       bakeryDB.getProductById(id).map {
         case None => NotFound("No product with that id found")
