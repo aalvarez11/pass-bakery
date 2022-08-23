@@ -12,17 +12,19 @@ Scala training project
 1. Install [Docker](https://www.docker.com/products/docker-desktop/) and  [postgresql](https://www.postgresql.org/download/) on your machine, if not installed already.
 2. Launch Docker (this app expects the latest postgres alpine)
 3. Run the database through terminal commands
-   1. If setting up the Docker container for the first time:
-   2. `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -p 5432:5432 -d postgres:alpine`
-   3. If the Docker container has already been set up, and is running:
-   4. `docker exec -it pass-bakery-postgres bash`
-4. Launch the app on a separate terminal tab/window inside the project root with `sbt run`
+   1. Create the docker container (after creation you can run/press play on the container inside the desktop app):
+   2. `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=pass_bakery_db -p 5432:5432 -d postgres:alpine`
+   3. Access the docker postgres database (enter `pass` when promtped):
+   4. `psql -h localhost -p 5432 -d pass_bakery_db -U user`
+4. Launch the app on a separate terminal tab (command+T), navigate to the project root, and run with `sbt run`
+5. Apply evolutions when prompted at any endpoint connection
 
-### Docker Setup Cheatsheet
+### Docker Cheatsheet
 1. **ONE TIME!** Download latest postgres alpine image: `docker pull postgres:alpine`
-2. **ONE TIME!** Create a Docker container: `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -p 5432:5432 -d postgres:alpine`
-3. Access the db in the terminal using bash: `docker exec -it pass-bakery-postgres bash` followed by `psql -U user` (provide password if prompted)
-4. Create the db: `create database pass_bakery_db`
-   * Check if it exists by listing databases with `\l`
-   * Connect with `\c pass_bakery_db`
+2. Create/start the Docker container: `docker run --name pass-bakery-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=pass -e POSTGRES_DB=pass_bakery_db -p 5432:5432 -d postgres:alpine`
+3. Access the db: `psql -h localhost -p 5432 -d pass_bakery_db -U user` and enter `pass` when prompted for the password
+   1. **IMPORTANT:** if you cannot access the container from the terminal with this command, stop the docker container (easy through the desktop app), delete the container, then start from step 2 again (docker run...)
+4. Additional Notes:
+   * Check if `pass_bakery_db` exists by listing databases with `\l`
+   * If needed, connect to the database with `\c pass_bakery_db`
    * View tables with `\d`

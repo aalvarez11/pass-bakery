@@ -1,14 +1,29 @@
 package DAO
 
+import doobie._
+import doobie.implicits._
+import doobie.implicits.javasql._
+import doobie.postgres.implicits._
+import doobie.postgres.pgisimplicits._
+import cats._
+import cats.effect._
+import cats.effect.unsafe.implicits.global
+import cats.implicits._
+import controllers.ProductUpdateRequest
+
 import javax.inject.Inject
 import play.api.db.Database
 
 import scala.concurrent.Future
-import models.DatabaseExecutionContext
-import play.api.libs.json.JsValue
+import models.{BakeryTransactor, DatabaseExecutionContext}
+import play.api.libs.json._
+
+import java.time.OffsetDateTime
+import java.util.UUID
 
 class BakeryDatabase @Inject() (
     db: Database,
+    bakeryTransactor: BakeryTransactor,
     implicit val databaseExecutionContext: DatabaseExecutionContext
 ) {
 
@@ -68,41 +83,86 @@ class BakeryDatabase @Inject() (
     }
   }
 
-  def getProductById(id: String): Future[Option[String]] = {
-    Future {
-      db.withConnection { conn =>
-        try {
-          val statement = {
-            conn.prepareStatement("SELECT * FROM product WHERE id::text = ?")
-          }
-          statement.setString(1, id)
+  def getProductById(id: UUID): Future[Option[Product]] = {
+    sql"""SELECT * FROM product WHERE id = $id"""
+      .query[Product]
+      .option
+      .transact(bakeryTransactor.xa)
+      .unsafeToFuture()
+  }
 
-          println(statement.toString)
-          val selectResult = statement.executeQuery()
-          val result = if (selectResult.next()) {
-            Some(
-              "id: " + selectResult.getString(
-                "id"
-              ) + ", name: " + selectResult.getString(
-                "name"
-              ) + ", quantity: " + selectResult.getInt(
-                "quantity"
-              ) + ", price: " + selectResult.getDouble(
-                "price"
-              ) + ", created at: " + selectResult.getTimestamp(
-                "created_at"
-              ) + ", updated at: " + selectResult.getTimestamp(
-                "updated_at"
-              )
-            )
-          } else {
-            None
-          }
-          result
-        } catch {
-          case e: Exception => Option(e.printStackTrace().toString)
-        }
-      }
+  def createProduct(newProduct: ProductUpdateRequest): Int = {
+
+    /** Steps for creating a record
+      *  1. bring in the json, everything should be provided except for the uuid
+      *  2. use query.update to commit the record
+      *  3. run the transaction
+      *  4. return a variable the controller can check to know the transaction succeeded (201 Created)
+      */
+    val newStamp = OffsetDateTime.now()
+    (newProduct.name, newProduct.quantity, newProduct.price) match {
+      case (Some(name), Some(quantity), Some(price)) =>
+        sql"""INSERT INTO product VALUES (gen_random_uuid(), $name, $quantity, $price, $newStamp, $newStamp)""".update.run
+          .transact(bakeryTransactor.xa)
+          .unsafeRunSync()
+      case _ => 0
     }
   }
+
+  def updateProduct(id: UUID, changesProduct: ProductUpdateRequest): Int = {
+
+    /** Steps for updating a record
+      *  1. bring in the json, json should be the values to change (8 combinations):
+      *     - none, name, qty, price, name+qty, name+price, qty+price, name+qty+price
+      *  2. check what values are given to update, form query on these params
+      *  3. query with .update on the given id
+      *  4. run the transaction
+      */
+    val newStamp = OffsetDateTime.now()
+
+    val query = (
+      changesProduct.name,
+      changesProduct.quantity,
+      changesProduct.price
+    ) match {
+      case (Some(name), Some(quantity), Some(price)) =>
+        sql"""UPDATE product SET name = $name, quantity = $quantity, price = $price, updated_at = $newStamp WHERE id = $id"""
+      case (Some(name), Some(quantity), None) =>
+        sql"""UPDATE product SET name = $name, quantity = $quantity, updated_at = $newStamp WHERE id = $id"""
+      case (Some(name), None, Some(price)) =>
+        sql"""UPDATE product SET name = $name, price = $price, updated_at = $newStamp WHERE id = $id"""
+      case (None, Some(quantity), Some(price)) =>
+        sql"""UPDATE product SET quantity = $quantity, price = $price, updated_at = $newStamp WHERE id = $id"""
+      case (Some(name), None, None) =>
+        sql"""UPDATE product SET name = $name, updated_at = $newStamp WHERE id = $id"""
+      case (None, Some(quantity), None) =>
+        sql"""UPDATE product SET quantity = $quantity, updated_at = $newStamp WHERE id = $id"""
+      case (None, None, Some(price)) =>
+        sql"""UPDATE product SET price = $price, updated_at = $newStamp WHERE id = $id"""
+      case (None, None, None) =>
+        sql""""""
+    }
+    query.update.run
+      .transact(bakeryTransactor.xa)
+      .unsafeRunSync()
+  }
+
+  def deleteProduct(id: UUID): Int = {
+    sql"""DELETE FROM product WHERE id = $id""".update.run
+      .transact(bakeryTransactor.xa)
+      .unsafeRunSync()
+  }
+}
+
+case class Product(
+    id: String,
+    name: String,
+    quantity: Int,
+    price: Double,
+    createdAt: OffsetDateTime,
+    updatedAt: OffsetDateTime
+)
+
+object Product {
+  implicit val productWrites: OWrites[Product] = Json.writes[Product]
 }
