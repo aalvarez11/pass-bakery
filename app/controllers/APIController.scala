@@ -146,6 +146,6 @@ case class ProductUpdateRequest(
 )
 
 object ProductUpdateRequest {
-  implicit val requestReads: Format[ProductUpdateRequest] =
+  implicit val requestFormat: Format[ProductUpdateRequest] =
     Json.format[ProductUpdateRequest]
 }
