@@ -14,9 +14,9 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 GET     /pass-bakery/status         controllers.APIController.getStatus()
 GET     /pass-bakery/db-tables      controllers.APIController.getDatabaseTables()
 POST    /rest/bakery/product        controllers.APIController.createProduct()
-GET     /rest/bakery/product/:id    controllers.APIController.getProduct(id: String)
-PUT     /rest/bakery/product/:id    controllers.APIController.updateProduct(id: String)
-DELETE  /rest/bakery/product/:id    controllers.APIController.deleteProduct(id: String)
+GET     /rest/bakery/product/:id    controllers.APIController.getProduct(id: java.util.UUID)
+PUT     /rest/bakery/product/:id    controllers.APIController.updateProduct(id: java.util.UUID)
+DELETE  /rest/bakery/product/:id    controllers.APIController.deleteProduct(id: java.util.UUID)
 
 # testing route to make sure the product table is returned
 GET     /rest/bakery/all-products   controllers.APIController.getAllProducts()
