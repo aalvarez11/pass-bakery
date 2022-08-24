@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
   evolutions,
   "org.postgresql" % "postgresql" % "42.4.0", // postgresql driver dependency (might be redundant w doobie-pgs)
   "org.tpolecat" %% "doobie-core" % "1.0.0-RC1", // doobie core dependency
+  "org.tpolecat" %% "doobie-h2" % "1.0.0-RC1", // H2 driver 1.4.200 + type mappings.
   "org.tpolecat" %% "doobie-hikari" % "1.0.0-RC1", // HikariCP transactor.
   "org.tpolecat" %% "doobie-postgres" % "1.0.0-RC1", // Postgres driver 42.3.1 + type mappings.
   "org.tpolecat" %% "doobie-specs2" % "1.0.0-RC1" % "test" // Specs2 support for typechecking statements.
